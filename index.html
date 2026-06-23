@@ -1,0 +1,602 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Spielanfrage" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#0b4eb3" />
+  <title>SSVg Dashboard – Spielanfrage</title>
+  <style>
+    :root {
+      --bg: #eef4ff;
+      --card: rgba(255, 255, 255, 0.94);
+      --text: #102033;
+      --muted: #667085;
+      --line: #d8e2f2;
+      --blue: #0b4eb3;
+      --blue2: #1677ff;
+      --light-blue: #e8f1ff;
+      --green: #0f8f52;
+      --orange: #cc6b00;
+      --red: #c62828;
+      --shadow: 0 18px 45px rgba(16, 32, 51, .12);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(22,119,255,.24), transparent 34rem),
+        linear-gradient(180deg, #f7fbff 0%, var(--bg) 100%);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      min-height: 100dvh;
+    }
+
+    .app {
+      width: min(940px, 100%);
+      margin: 0 auto;
+      padding: calc(env(safe-area-inset-top) + 14px) 14px calc(env(safe-area-inset-bottom) + 90px);
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #083b91 0%, #0b64db 55%, #42a5ff 100%);
+      color: #fff;
+      border-radius: 28px;
+      padding: 22px 18px;
+      box-shadow: var(--shadow);
+      position: sticky;
+      top: calc(env(safe-area-inset-top) + 8px);
+      z-index: 5;
+    }
+
+    .hero h1 { margin: 0; font-size: 25px; letter-spacing: -.03em; }
+    .hero p { margin: 7px 0 0; color: rgba(255,255,255,.9); font-size: 14px; }
+
+    .tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin: 14px 0;
+      position: sticky;
+      top: calc(env(safe-area-inset-top) + 112px);
+      z-index: 4;
+    }
+
+    .tab {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(255,255,255,.82);
+      color: var(--blue);
+      padding: 12px 8px;
+      font-weight: 800;
+      box-shadow: 0 8px 24px rgba(16,32,51,.08);
+    }
+
+    .tab.active { background: var(--blue); color: #fff; border-color: var(--blue); }
+
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    .card {
+      background: var(--card);
+      border: 1px solid rgba(216,226,242,.9);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px;
+      margin-bottom: 14px;
+      backdrop-filter: blur(10px);
+    }
+
+    h2 { font-size: 18px; margin: 0 0 12px; letter-spacing: -.01em; }
+    h3 { font-size: 15px; margin: 16px 0 8px; }
+
+    label { display: block; font-size: 13px; font-weight: 800; margin: 12px 0 6px; color: #1b3554; }
+
+    input, textarea, select, button {
+      font: inherit;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #fff;
+      color: var(--text);
+      padding: 13px 14px;
+      outline: none;
+      min-height: 48px;
+    }
+
+    textarea { min-height: 145px; resize: vertical; }
+    input:focus, textarea:focus, select:focus { border-color: var(--blue2); box-shadow: 0 0 0 4px rgba(22,119,255,.13); }
+
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    @media (max-width: 420px) { .row { grid-template-columns: 1fr; } }
+
+    .segmented {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .chip {
+      border: 1px solid var(--line);
+      background: #fff;
+      color: #1b3554;
+      border-radius: 16px;
+      padding: 12px 8px;
+      font-weight: 800;
+    }
+
+    .chip.active { background: var(--light-blue); color: var(--blue); border-color: rgba(11,78,179,.35); }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .actions.one { grid-template-columns: 1fr; }
+
+    button {
+      min-height: 48px;
+      border: 0;
+      border-radius: 16px;
+      padding: 12px 14px;
+      font-weight: 850;
+      cursor: pointer;
+      background: var(--blue);
+      color: #fff;
+      box-shadow: 0 10px 24px rgba(11,78,179,.22);
+    }
+
+    button.secondary { background: #fff; color: var(--blue); border: 1px solid rgba(11,78,179,.25); box-shadow: none; }
+    button.red { background: #fff4f4; color: var(--red); border: 1px solid #ffd1d1; box-shadow: none; }
+    button:active { transform: translateY(1px); }
+
+    .hint { color: var(--muted); font-size: 13px; margin: 9px 0 0; }
+
+    .days { display: grid; gap: 10px; }
+
+    .day {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 12px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .day.off { background: #fff5f5; border-color: #ffd1d1; }
+    .day.home { background: #f0fff7; border-color: #bff0d3; }
+    .day.away { background: #fff8ed; border-color: #ffdca8; }
+
+    .day-head { display: flex; justify-content: space-between; gap: 8px; align-items: start; }
+    .date-title { font-weight: 900; }
+    .badge { font-size: 12px; font-weight: 900; padding: 5px 9px; border-radius: 999px; background: #edf3ff; color: var(--blue); white-space: nowrap; }
+    .badge.home { background: #e8fff2; color: var(--green); }
+    .badge.away { background: #fff0dd; color: var(--orange); }
+    .badge.off { background: #ffe8e8; color: var(--red); }
+
+    .status-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; }
+    .status-grid button { min-height: 42px; padding: 8px 5px; font-size: 13px; box-shadow: none; background: #f4f7fb; color: #24405f; border: 1px solid var(--line); }
+    .status-grid button.active.open { background: var(--blue); color: #fff; border-color: var(--blue); }
+    .status-grid button.active.home { background: var(--green); color: #fff; border-color: var(--green); }
+    .status-grid button.active.away { background: var(--orange); color: #fff; border-color: var(--orange); }
+    .status-grid button.active.off { background: var(--red); color: #fff; border-color: var(--red); }
+
+    .output {
+      min-height: 430px;
+      white-space: pre-wrap;
+      font-size: 15px;
+      line-height: 1.45;
+    }
+
+    .footerbar {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 10px 14px calc(env(safe-area-inset-bottom) + 10px);
+      background: rgba(238,244,255,.88);
+      backdrop-filter: blur(14px);
+      border-top: 1px solid rgba(216,226,242,.9);
+      z-index: 10;
+    }
+
+    .footerbar-inner { width: min(940px, 100%); margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: calc(env(safe-area-inset-bottom) + 78px);
+      transform: translateX(-50%);
+      background: #102033;
+      color: #fff;
+      padding: 12px 16px;
+      border-radius: 999px;
+      font-weight: 850;
+      box-shadow: var(--shadow);
+      display: none;
+      z-index: 20;
+      white-space: nowrap;
+    }
+
+    @media (min-width: 760px) {
+      .layout { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: start; }
+      .wide { grid-column: 1 / -1; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="hero">
+      <h1>⚽ Spielanfrage</h1>
+      <p>SSVg Dashboard · Heim/Auswärts auswählen · WhatsApp-Text kopieren</p>
+    </section>
+
+    <nav class="tabs" aria-label="Bereiche">
+      <button class="tab active" data-tab="setup">Text</button>
+      <button class="tab" data-tab="days">Tage</button>
+      <button class="tab" data-tab="result">Kopieren</button>
+    </nav>
+
+    <section id="setup" class="panel active">
+      <div class="layout">
+        <div class="card">
+          <h2>Standardtext bearbeiten</h2>
+          <label for="topText">Text oben</label>
+          <textarea id="topText"></textarea>
+          <label for="bottomText">Text unten</label>
+          <textarea id="bottomText"></textarea>
+          <div class="actions one">
+            <button class="secondary" id="resetText">Standard wiederherstellen</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Zeitraum & Tage</h2>
+          <div class="row">
+            <div>
+              <label for="startDate">Von</label>
+              <input id="startDate" type="date" />
+            </div>
+            <div>
+              <label for="endDate">Bis</label>
+              <input id="endDate" type="date" />
+            </div>
+          </div>
+
+          <label>Welche Tage anzeigen?</label>
+          <div class="segmented" id="dayFilter">
+            <button class="chip active" data-filter="both">Beide</button>
+            <button class="chip" data-filter="saturday">Samstag</button>
+            <button class="chip" data-filter="sunday">Sonntag</button>
+          </div>
+
+          <label for="strikeMode">Gestrichene Tage</label>
+          <select id="strikeMode">
+            <option value="whatsapp">mit ~Text~ für WhatsApp</option>
+            <option value="text">mit „nicht verfügbar“</option>
+          </select>
+
+          <div class="actions">
+            <button id="loadDays">Tage laden</button>
+            <button class="secondary" id="goDays">Zu Tage</button>
+          </div>
+          <p class="hint">Dein Text bleibt gespeichert. Du kannst ihn jederzeit ändern.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="days" class="panel">
+      <div class="card">
+        <h2>Tage auswählen</h2>
+        <div class="actions">
+          <button class="secondary" id="allOpen">Alle offen</button>
+          <button class="secondary" id="allHome">Alle Heim</button>
+          <button class="secondary" id="allAway">Alle Auswärts</button>
+          <button class="red" id="allOff">Alle streichen</button>
+        </div>
+        <p class="hint">Für jeden Tag kannst du Heim, Auswärts oder gestrichen auswählen.</p>
+      </div>
+      <div class="days" id="daysList"></div>
+    </section>
+
+    <section id="result" class="panel">
+      <div class="card">
+        <h2>Fertiger Text</h2>
+        <textarea id="output" class="output" readonly></textarea>
+        <div class="actions">
+          <button id="copyText">Text kopieren</button>
+          <button class="secondary" id="shareText">Teilen</button>
+        </div>
+        <p class="hint">Auf dem iPhone kannst du den kopierten Text direkt in WhatsApp einfügen.</p>
+      </div>
+    </section>
+  </main>
+
+  <div class="footerbar">
+    <div class="footerbar-inner">
+      <button id="bottomCopy">Text kopieren</button>
+      <button class="secondary" id="bottomResult">Vorschau</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">Kopiert ✅</div>
+
+<script>
+(() => {
+  const storageKey = "ssvg-spielanfrage-v2";
+
+  const defaultTop = `⚽ Spielanfrage ⚽ ‼️
+
+🔵⚪ SSVg Velbert U13 / Jahrgang 2014 ⚪🔵`;
+
+  const defaultBottom = `🅿️ Spielort: Heim / Auswärts nach Absprache
+
+⚽ Spielstärke: mittel
+
+📩 Bei Interesse bitte PN
+
+VG Fatih`;
+
+  const defaultDays = [
+    { date: "2026-05-16", status: "off", note: "" },
+    { date: "2026-05-17", status: "away", note: "" },
+    { date: "2026-06-06", status: "off", note: "" },
+    { date: "2026-06-07", status: "off", note: "" },
+    { date: "2026-06-13", status: "off", note: "" },
+    { date: "2026-06-14", status: "open", note: "" },
+    { date: "2026-06-20", status: "open", note: "" },
+    { date: "2026-06-21", status: "open", note: "" },
+    { date: "2026-06-27", status: "off", note: "" },
+    { date: "2026-06-28", status: "open", note: "" }
+  ];
+
+  let state = {
+    topText: defaultTop,
+    bottomText: defaultBottom,
+    startDate: "2026-05-16",
+    endDate: "2026-06-28",
+    dayFilter: "both",
+    strikeMode: "whatsapp",
+    days: defaultDays
+  };
+
+  const $ = id => document.getElementById(id);
+  const el = {
+    topText: $("topText"), bottomText: $("bottomText"), startDate: $("startDate"), endDate: $("endDate"),
+    strikeMode: $("strikeMode"), daysList: $("daysList"), output: $("output"), toast: $("toast")
+  };
+
+  function showToast(text) {
+    el.toast.textContent = text;
+    el.toast.style.display = "block";
+    setTimeout(() => el.toast.style.display = "none", 1700);
+  }
+
+  function pad(n) { return String(n).padStart(2, "0"); }
+  function parseDate(iso) {
+    const [y, m, d] = iso.split("-").map(Number);
+    return new Date(y, m - 1, d);
+  }
+  function iso(d) { return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
+  function formatDate(isoText) {
+    const d = parseDate(isoText);
+    return pad(d.getDate()) + "." + pad(d.getMonth() + 1) + "." + d.getFullYear();
+  }
+  function weekday(isoText) {
+    return parseDate(isoText).getDay() === 6 ? "Samstag" : "Sonntag";
+  }
+  function filterOk(dayNumber) {
+    if (state.dayFilter === "both") return dayNumber === 6 || dayNumber === 0;
+    if (state.dayFilter === "saturday") return dayNumber === 6;
+    if (state.dayFilter === "sunday") return dayNumber === 0;
+    return false;
+  }
+  function statusName(status) {
+    return { open: "offen", home: "Heim", away: "Auswärts", off: "gestrichen" }[status] || "offen";
+  }
+
+  function save() { localStorage.setItem(storageKey, JSON.stringify(state)); }
+  function load() {
+    try {
+      const raw = localStorage.getItem(storageKey);
+      if (raw) state = { ...state, ...JSON.parse(raw) };
+      if (!Array.isArray(state.days)) state.days = defaultDays;
+    } catch(e) {}
+  }
+
+  function buildDays() {
+    const start = parseDate(state.startDate);
+    const end = parseDate(state.endDate);
+    const old = new Map(state.days.map(x => [x.date, x]));
+    const next = [];
+    const cur = new Date(start);
+    while (cur <= end) {
+      const day = cur.getDay();
+      if (filterOk(day)) {
+        const key = iso(cur);
+        next.push(old.get(key) || { date: key, status: "open", note: "" });
+      }
+      cur.setDate(cur.getDate() + 1);
+    }
+    state.days = next;
+  }
+
+  function makeLine(item) {
+    let line = "🗓 " + weekday(item.date) + ", " + formatDate(item.date);
+    if (item.status === "home") line += " (Heim)";
+    if (item.status === "away") line += " (Auswärts)";
+    if (item.note && item.note.trim()) line += " " + item.note.trim();
+    if (item.status === "off") {
+      return state.strikeMode === "whatsapp" ? "~" + line + "~" : line + " (nicht verfügbar)";
+    }
+    return line;
+  }
+
+  function buildOutput() {
+    const out = [];
+    out.push(state.topText.trim());
+    out.push("");
+    state.days.forEach((item, i) => {
+      out.push(makeLine(item));
+      const next = state.days[i + 1];
+      if (next) {
+        const gap = Math.round((parseDate(next.date) - parseDate(item.date)) / 86400000);
+        if (gap > 1) out.push("");
+      }
+    });
+    out.push("");
+    out.push(state.bottomText.trim());
+    return out.join("\n").replace(/\n{4,}/g, "\n\n\n");
+  }
+
+  function syncFromInputs() {
+    state.topText = el.topText.value;
+    state.bottomText = el.bottomText.value;
+    state.startDate = el.startDate.value;
+    state.endDate = el.endDate.value;
+    state.strikeMode = el.strikeMode.value;
+    updateOutput();
+    save();
+  }
+
+  function updateOutput() { el.output.value = buildOutput(); }
+
+  function renderDayFilter() {
+    document.querySelectorAll("#dayFilter .chip").forEach(btn => {
+      btn.classList.toggle("active", btn.dataset.filter === state.dayFilter);
+    });
+  }
+
+  function renderTabs(tabId) {
+    document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.dataset.tab === tabId));
+    document.querySelectorAll(".panel").forEach(p => p.classList.toggle("active", p.id === tabId));
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function renderDays() {
+    el.daysList.innerHTML = "";
+    if (!state.days.length) {
+      el.daysList.innerHTML = `<div class="card"><p class="hint">Noch keine Tage geladen. Bitte im Bereich „Text“ Zeitraum wählen und „Tage laden“ drücken.</p></div>`;
+      return;
+    }
+    state.days.forEach((item, index) => {
+      const card = document.createElement("div");
+      card.className = "day " + (item.status || "open");
+      card.innerHTML = `
+        <div class="day-head">
+          <div class="date-title">🗓 ${weekday(item.date)}, ${formatDate(item.date)}</div>
+          <span class="badge ${item.status || "open"}">${statusName(item.status)}</span>
+        </div>
+        <div class="status-grid">
+          <button class="open ${item.status === "open" ? "active" : ""}" data-status="open">Offen</button>
+          <button class="home ${item.status === "home" ? "active" : ""}" data-status="home">Heim</button>
+          <button class="away ${item.status === "away" ? "active" : ""}" data-status="away">Auswärts</button>
+          <button class="off ${item.status === "off" ? "active" : ""}" data-status="off">Streichen</button>
+        </div>
+        <input value="${(item.note || "").replaceAll('"', '&quot;')}" placeholder="Optional: Uhrzeit oder Zusatz" />
+      `;
+      card.querySelectorAll("button[data-status]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          state.days[index].status = btn.dataset.status;
+          updateOutput();
+          save();
+          renderDays();
+        });
+      });
+      card.querySelector("input").addEventListener("input", ev => {
+        state.days[index].note = ev.target.value;
+        updateOutput();
+        save();
+      });
+      el.daysList.appendChild(card);
+    });
+  }
+
+  function renderAll() {
+    el.topText.value = state.topText;
+    el.bottomText.value = state.bottomText;
+    el.startDate.value = state.startDate;
+    el.endDate.value = state.endDate;
+    el.strikeMode.value = state.strikeMode;
+    renderDayFilter();
+    renderDays();
+    updateOutput();
+  }
+
+  async function copyText() {
+    syncFromInputs();
+    try {
+      await navigator.clipboard.writeText(el.output.value);
+      showToast("Text kopiert ✅");
+    } catch(e) {
+      el.output.focus();
+      el.output.select();
+      document.execCommand("copy");
+      showToast("Text markiert ✅");
+    }
+  }
+
+  async function shareText() {
+    syncFromInputs();
+    if (navigator.share) {
+      try { await navigator.share({ text: el.output.value }); return; } catch(e) {}
+    }
+    copyText();
+  }
+
+  document.querySelectorAll(".tab").forEach(btn => btn.addEventListener("click", () => renderTabs(btn.dataset.tab)));
+  document.querySelectorAll("#dayFilter .chip").forEach(btn => btn.addEventListener("click", () => {
+    state.dayFilter = btn.dataset.filter;
+    renderDayFilter();
+    syncFromInputs();
+  }));
+
+  [el.topText, el.bottomText, el.startDate, el.endDate, el.strikeMode].forEach(x => x.addEventListener("input", syncFromInputs));
+
+  $("loadDays").addEventListener("click", () => {
+    syncFromInputs();
+    if (!state.startDate || !state.endDate) { showToast("Datum fehlt"); return; }
+    if (parseDate(state.startDate) > parseDate(state.endDate)) { showToast("Startdatum ist später"); return; }
+    buildDays();
+    renderDays();
+    updateOutput();
+    save();
+    showToast("Tage geladen ✅");
+  });
+
+  $("goDays").addEventListener("click", () => renderTabs("days"));
+  $("resetText").addEventListener("click", () => { state.topText = defaultTop; state.bottomText = defaultBottom; renderAll(); save(); });
+
+  function setAll(status) {
+    state.days = state.days.map(x => ({ ...x, status }));
+    renderDays();
+    updateOutput();
+    save();
+  }
+  $("allOpen").addEventListener("click", () => setAll("open"));
+  $("allHome").addEventListener("click", () => setAll("home"));
+  $("allAway").addEventListener("click", () => setAll("away"));
+  $("allOff").addEventListener("click", () => setAll("off"));
+
+  $("copyText").addEventListener("click", copyText);
+  $("bottomCopy").addEventListener("click", copyText);
+  $("shareText").addEventListener("click", shareText);
+  $("bottomResult").addEventListener("click", () => renderTabs("result"));
+
+  load();
+  renderAll();
+})();
+</script>
+</body>
+</html>
